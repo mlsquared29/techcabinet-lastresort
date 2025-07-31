@@ -1,0 +1,1 @@
+Website for the Last Resort Competition Series
