@@ -1,25 +1,18 @@
 from django.db import models
+from django.utils import timezone
 
 class Question(models.Model):
-    question_text = models.CharField(max_length=200)
-    pub_date = models.DateTimeField('Date Published')
+    question_text = models.CharField(max_length=400)
+    pub_date = models.DateTimeField('Date Published', default=timezone.now)
 
     def __str__(self):
         return self.question_text
 
-class Solution(models.Model):
-    question = models.OneToOneField(Question, on_delete=models.CASCADE)
-    solution_text = models.CharField(max_length=200)
-    pub_date = models.DateTimeField('Date Published')
-
-    def __str__(self):
-        return self.solution_text
-
-
 class Answer(models.Model):
-    solution = models.OneToOneField(Solution, on_delete=models.CASCADE)
-    answer_text = models.CharField(max_length=200)
-    pub_date = models.DateTimeField('Date Published')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer_text = models.CharField(max_length=400)
+    pub_date = models.DateTimeField('Date Published', default=timezone.now)
+    votes = models.IntegerField(default=0)
 
     def __str__(self):
         return self.answer_text

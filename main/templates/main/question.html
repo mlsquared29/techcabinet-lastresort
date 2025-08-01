@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ question.question_text }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <!-- Back Navigation -->
+        <div class="mb-6">
+            <a href="{% url 'main:index' %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                <span class="mr-2">←</span>
+                Back to Home
+            </a>
+        </div>
+
+        <!-- Question Header -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ question.question_text }}</h1>
+            {% if question.answer.answer_text %}
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-md">
+                    <p class="text-blue-800 font-medium">{{ question.answer.answer_text }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Answers Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Answers</h2>
+            {% if answers %}
+                <div class="space-y-4">
+                    {% for answer in answers %}
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow duration-200">
+                            <p class="text-gray-800 mb-3">{{ answer.answer_text }}</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">{{ answer.votes }} votes</span>
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'main:upvote' question.id answer.id %}" 
+                                       class="text-green-600 hover:text-green-800 transition-colors duration-200 text-lg">
+                                        👍
+                                    </a>
+                                    <a href="{% url 'main:downvote' question.id answer.id %}" 
+                                       class="text-red-600 hover:text-red-800 transition-colors duration-200 text-lg">
+                                        👎
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500 italic">No answers yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Answer Form -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Add Your Answer</h2>
+            <form action="{% url 'main:answer' question.id %}" method="post" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="answer" class="block text-sm font-medium text-gray-700 mb-2">Answer:</label>
+                    <input type="text" 
+                           id="answer" 
+                           name="answer" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                           placeholder="Enter your answer here..."
+                           required>
+                </div>
+                <button type="submit" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Submit Answer
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
