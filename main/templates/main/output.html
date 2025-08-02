@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ query.query }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+        
+        // Listen for HTMX after-swap event to trigger MathJax rendering
+        document.addEventListener('htmx:afterSwap', function(event) {
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        });
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <div class="mb-6">
+            <a href="{% url 'main:process_query' %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                <span class="mr-2">←</span>
+                Back to Query
+            </a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">Query</h1>
+            <p class="text-lg text-gray-700">{{ query.query }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Responses</h2>
+            <div id="outputs-container"
+                 hx-get="{% url 'main:check_outputs' query.id %}"
+                 hx-trigger="load"
+                 hx-swap="innerHTML"
+                 hx-target="this">
+                {% if outputs and outputs.count >= query.amount %}
+                    {% include 'main/outputs_partial.html' %}
+                {% else %}
+                    {% include 'main/loading_partial.html' %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,3 +1,6 @@
 Django
 psycopg[binary]
 python-dotenv
+openai
+celery
+redis

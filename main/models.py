@@ -1,18 +1,33 @@
+import os
 from django.db import models
 from django.utils import timezone
+from openai import OpenAI
+from dotenv import load_dotenv
 
-class Question(models.Model):
-    question_text = models.CharField(max_length=400)
+load_dotenv()
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+class Query(models.Model):
+    query = models.CharField(max_length=40000)
     pub_date = models.DateTimeField('Date Published', default=timezone.now)
+    amount = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.question_text
+        return self.query
+    
+    def get_output(self):
+        response = client.chat.completions.create(
+            model="o3",
+            messages=[{"role": "user", "content": self.query}]
+        )
+        return response.choices[0].message.content
 
-class Answer(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    answer_text = models.CharField(max_length=400)
+class Output(models.Model):
+    query = models.ForeignKey(Query, on_delete=models.CASCADE)
+    output = models.CharField(max_length=40000)
     pub_date = models.DateTimeField('Date Published', default=timezone.now)
     votes = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.answer_text
+        return self.output
