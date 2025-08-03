@@ -3,34 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Not a GPT Wrapper</title>
+    <title>Last Resort</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
         <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">Not a GPT Wrapper</h1>
-            <p class="text-xl text-gray-600">Talk to multiple intelligent beings.</p>
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Outsmart the AI</h1>
+            <p class="text-xl text-gray-600">Write a set of {{num_questions}} questions and solutions that you think AI will struggle with.</p>
+            <div class="mt-4">
+                <a href="{% url 'main:leaderboard' %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors duration-200">
+                    <span class="mr-2">🏆</span>
+                    View Leaderboard
+                </a>
+            </div>
         </div>
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <form action="{% url 'main:process_query' %}" method="post" class="space-y-4">
+            <form action="{% url 'main:process_query' %}" method="post" class="space-y-6">
                 {% csrf_token %}
-                <div>
-                    <label for="{{ form.query.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.query.label }}
-                    </label>
-                    {{ form.query }}
-                    <label for="{{ form.amount.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.amount.label }}
-                    </label>
-                    {{ form.amount }}
+                
+                <!-- Question Rows -->
+                <div class="space-y-4">
+                    {% for i in question_range %}
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Question {{ forloop.counter }}</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="question_{{ forloop.counter0 }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Question
+                                    </label>
+                                    <input type="text" 
+                                           name="question_{{ forloop.counter0 }}" 
+                                           id="question_{{ forloop.counter0 }}"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                                           placeholder="Enter your question..."
+                                           required>
+                                </div>
+                                <div>
+                                    <label for="solution_{{ forloop.counter0 }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Solution
+                                    </label>
+                                    <input type="text" 
+                                           name="solution_{{ forloop.counter0 }}" 
+                                           id="solution_{{ forloop.counter0 }}"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                                           placeholder="Enter the solution..."
+                                           required>
+                                </div>
+                                <div>
+                                    <label for="answer_{{ forloop.counter0 }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Answer
+                                    </label>
+                                    <input type="text" 
+                                           name="answer_{{ forloop.counter0 }}" 
+                                           id="answer_{{ forloop.counter0 }}"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                                           placeholder="Enter the answer..."
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
+
                 <button type="submit" 
                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    Submit Query
+                    Submit Questions and Solutions
                 </button>
             </form>
         </div>

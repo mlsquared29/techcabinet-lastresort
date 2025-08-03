@@ -1,24 +1,40 @@
+<!-- Score Display -->
+<div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+    <div class="text-center">
+        <div class="text-3xl font-bold text-blue-600 mb-2">
+            Your questions fooled the AI {{psa_group.score}}% of the time!
+        </div>
+    </div>
+</div>
+
+<!-- Responses Section -->
+<h2 class="text-2xl font-semibold text-gray-800 mb-4">Responses</h2>
 <div class="space-y-4">
-    {% for output in outputs %}
-        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow duration-200">
-            <p class="text-gray-800 leading-relaxed">{{ output.output }}</p>
+    {% for ai_response in ai_responses %}
+        {% if ai_response.psa_entry.answer == ai_response.ai_answer %}
+            <div class="border border-green-200 rounded-lg p-4 hover:shadow-sm transition-shadow duration-200 bg-green-50">
+        {% else %}
+            <div class="border border-red-200 rounded-lg p-4 hover:shadow-sm transition-shadow duration-200 bg-red-50">
+        {% endif %}
+            <p class="text-gray-800 leading-relaxed">{{ ai_response.ai_solution }}</p>
             <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                <span class="text-sm text-gray-500">{{ output.pub_date|date:"M j, Y g:i A" }}</span>
+                <span class="text-sm text-gray-500">{{ ai_response.pub_date|date:"M j, Y g:i A" }}</span>
                 <div class="flex items-center space-x-2">
-                    <span class="text-sm text-gray-600">{{ output.votes }} votes</span>
-                    <button class="text-green-600 hover:text-green-800 transition-colors duration-200">
-                        👍
-                    </button>
-                    <button class="text-red-600 hover:text-red-800 transition-colors duration-200">
-                        👎
-                    </button>
+                    <span class="text-sm font-medium">
+                        {% if ai_response.psa_entry.answer == ai_response.ai_answer %}
+                            <span class="text-green-700">✓ Correct</span>
+                        {% else %}
+                            <span class="text-red-700">✗ Incorrect</span>
+                        {% endif %}
+                    </span>
+                    <span class="text-sm text-gray-600">Expected: {{ ai_response.psa_entry.answer }}</span>
+                    <span class="text-sm text-gray-600">AI: {{ ai_response.ai_answer }}</span>
                 </div>
             </div>
         </div>
     {% endfor %}
 </div>
 <script>
-    // Trigger MathJax rendering after HTMX content is loaded
     if (window.MathJax) {
         MathJax.typesetPromise();
     }

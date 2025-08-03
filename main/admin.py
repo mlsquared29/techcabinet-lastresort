@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Query, Output
+from .models import PSAGroup, PSAEntry, AIResponse
 
-admin.site.register(Query)
-admin.site.register(Output)
+admin.site.register(PSAGroup)
+admin.site.register(PSAEntry)
+admin.site.register(AIResponse)

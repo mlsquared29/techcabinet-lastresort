@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Navigation -->
+        <div class="mb-6 flex justify-between items-center">
+            <a href="{% url 'main:process_query' %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                <span class="mr-2">←</span>
+                Back to Submission
+            </a>
+        </div>
+
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Last Resort Leaderboard</h1>
+            <p class="text-xl text-gray-600">What percentage of the time can you fool the AI?</p>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800">Top Performers</h2>
+            </div>
+            
+            {% if psa_groups %}
+                <div class="divide-y divide-gray-200">
+                    {% for psa_group in psa_groups %}
+                        <div class="p-6 hover:bg-gray-50 transition-colors duration-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <!-- Rank with Medal -->
+                                    <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100">
+                                        {% if forloop.counter == 1 %}
+                                            <span class="text-2xl">🥇</span>
+                                        {% elif forloop.counter == 2 %}
+                                            <span class="text-2xl">🥈</span>
+                                        {% elif forloop.counter == 3 %}
+                                            <span class="text-2xl">🥉</span>
+                                        {% else %}
+                                            <span class="text-lg font-bold text-gray-600">#{{ forloop.counter }}</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Group Info -->
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">{{ psa_group.name }}</h3>
+                                        <p class="text-sm text-gray-500">{{ psa_group.pub_date|date:"M j, Y g:i A" }}</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Score -->
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-blue-600">{{ psa_group.score|floatformat:1 }}%</div>
+                                    <p class="text-sm text-gray-500">AI fooled</p>
+                                </div>
+                            </div>
+                            
+
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <div class="text-6xl mb-4">🏆</div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No submissions yet</h3>
+                    <p class="text-gray-600 mb-4">Be the first to create challenging questions for AI!</p>
+                    <a href="{% url 'main:process_query' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200">
+                        Create Your First Submission
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Stats Summary -->
+        {% if psa_groups %}
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
+                    <div class="text-3xl font-bold text-blue-600 mb-2">{{ psa_groups.count }}</div>
+                    <div class="text-gray-600">Total Submissions</div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
+                    <div class="text-3xl font-bold text-green-600 mb-2">
+                        {% if psa_groups %}
+                            {{ average_score|floatformat:1 }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </div>
+                    <div class="text-gray-600">Average AI Fooled</div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
+                    <div class="text-3xl font-bold text-purple-600 mb-2">
+                        {% if psa_groups %}
+                            {% for group in psa_groups %}
+                                {% if forloop.first %}
+                                    {{ group.score|floatformat:1 }}%
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </div>
+                    <div class="text-gray-600">Best Performance</div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

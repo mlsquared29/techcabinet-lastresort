@@ -2,44 +2,75 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .models import Query, Output
-from .forms import QueryForm
+from .models import PSAGroup, PSAEntry, AIResponse
+from .forms import PSAEntryForm, NUM_QUESTIONS
 
 def process_query(request):
     if request.method == 'POST':
-        form = QueryForm(request.POST)
+        form = PSAEntryForm(request.POST)
         if form.is_valid():
-            query_text = form.cleaned_data['query']
-            query_amount = form.cleaned_data['amount']
-            query = Query.objects.create(query=query_text, amount=query_amount)
-
-            from .tasks import generate_outputs_for_query
-            generate_outputs_for_query.delay_on_commit(query.id)
+            group = PSAGroup.objects.create(name=f"Group {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            for i in range(NUM_QUESTIONS):
+                psa_entry = PSAEntry.objects.create(group=group, problem=form.cleaned_data[f'question_{i}'], solution=form.cleaned_data[f'solution_{i}'], answer=form.cleaned_data[f'answer_{i}'])
+                
+            from .tasks import generate_ai_responses
+            generate_ai_responses.delay_on_commit(group.id)
             
-            return HttpResponseRedirect(reverse('main:output', args=(query.id,)))
+            return HttpResponseRedirect(reverse('main:output', args=(group.id,)))
     else:
-        form = QueryForm()
-    return render(request, 'main/process_query.html', {'form': form})
-
-def output(request, query_id):
-    query = get_object_or_404(Query, pk=query_id)
-    outputs = query.output_set.all().order_by('-votes', '-pub_date')
-    return render(request, 'main/output.html', {
-        'query': query,
-        'outputs': outputs
+        form = PSAEntryForm()
+    return render(request, 'main/process_query.html', {
+        'form': form,
+        'num_questions': NUM_QUESTIONS,
+        'question_range': range(NUM_QUESTIONS)
     })
 
-def check_outputs(request, query_id):
+def output(request, psa_group_id):
+    psa_group = get_object_or_404(PSAGroup, pk=psa_group_id)
+    psa_entries = psa_group.psaentry_set.all().order_by('-pub_date')
+    ai_responses = AIResponse.objects.filter(psa_entry__group=psa_group).order_by('-pub_date')
+    return render(request, 'main/output.html', {
+        'psa_group': psa_group,
+        'psa_entries': psa_entries,
+        'ai_responses': ai_responses
+    })
+
+def check_outputs(request, psa_group_id):
     """HTMX endpoint to check for outputs"""
-    query = get_object_or_404(Query, pk=query_id)
-    outputs = query.output_set.all().order_by('-votes', '-pub_date')
+    psa_group = get_object_or_404(PSAGroup, pk=psa_group_id)
+    psa_entries = psa_group.psaentry_set.all()
+    ai_responses = AIResponse.objects.filter(psa_entry__group=psa_group).order_by('-pub_date')
     
-    if outputs.count() >= query.amount:
+    if ai_responses.count() >= psa_entries.count():
+        correct = 0
+        for ai_response in ai_responses:
+            if ai_response.psa_entry.answer == ai_response.ai_answer:
+                correct += 1
+        psa_group.score = 100-correct*100/psa_entries.count()
+        psa_group.save()
         return render(request, 'main/outputs_partial.html', {
-            'outputs': outputs
+            'psa_group': psa_group,
+            'psa_entries': psa_entries,
+            'ai_responses': ai_responses
         })
     else:
         return render(request, 'main/loading_partial.html', {
-            'query': query,
-            'amount': query.amount
+            'psa_group': psa_group,
+            'psa_entries': psa_entries,
+            'ai_responses': ai_responses
         })
+    
+def leaderboard(request):
+    psa_groups = PSAGroup.objects.all().order_by('-score')
+    
+    # Calculate average score
+    if psa_groups.exists():
+        total_score = sum(group.score for group in psa_groups)
+        average_score = total_score / psa_groups.count()
+    else:
+        average_score = 0
+    
+    return render(request, 'main/leaderboard.html', {
+        'psa_groups': psa_groups,
+        'average_score': average_score
+    })

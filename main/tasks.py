@@ -1,38 +1,44 @@
 from celery import shared_task, group
-from .models import Query, Output
+from .models import PSAGroup, PSAEntry, AIResponse
 
 @shared_task
-def generate_single_output(query_id, output_index):
-    """Generate a single output for a query"""
+def generate_single_ai_response(psa_group_id, psa_entry_id):
+    """Generate a single AI response for a PSA entry"""
     try:
-        query = Query.objects.get(id=query_id)
-        output_text = query.get_output()
-        output = query.output_set.create(output=output_text)
+        psa_entry = PSAEntry.objects.get(id=psa_entry_id, group_id=psa_group_id)
+        
+        ai_solution, ai_answer = psa_entry.get_ai_solution_and_answer()
+        
+        ai_response = AIResponse.objects.create(
+            psa_entry=psa_entry,
+            ai_solution=ai_solution,
+            ai_answer=ai_answer
+        )
+        
         return {
-            'output_id': output.id,
-            'output_index': output_index,
+            'ai_response_id': ai_response.id,
+            'psa_entry_id': psa_entry_id,
             'success': True
         }
     except Exception as e:
-        print(f"Error generating output {output_index} for query {query_id}: {e}")
+        print(f"Error generating AI response for PSA entry {psa_entry_id}: {e}")
         return {
-            'output_index': output_index,
+            'psa_entry_id': psa_entry_id,
             'success': False,
             'error': str(e)
         }
 
 @shared_task
-def generate_outputs_for_query(query_id):
-    """Generate multiple outputs in parallel for a query"""
+def generate_ai_responses(psa_group_id):
+    """Generate AI responses for all PSA entries in a group"""
     try:
-        query = Query.objects.get(id=query_id)
-        amount = query.amount
+        psa_group = PSAGroup.objects.get(id=psa_group_id)
+        psa_entries = psa_group.psaentry_set.all()
         
-        # Create a group of tasks to run in parallel
-        job = group(generate_single_output.s(query_id, i) for i in range(amount))
+        job = group(generate_single_ai_response.s(psa_group_id, entry.id) for entry in psa_entries)
         result = job.apply_async()
         
         return result.id
     except Exception as e:
-        print(f"Error setting up parallel tasks for query {query_id}: {e}")
+        print(f"Error setting up parallel tasks for PSA group {psa_group_id}: {e}")
         return None

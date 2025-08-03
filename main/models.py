@@ -8,26 +8,37 @@ load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-class Query(models.Model):
-    query = models.CharField(max_length=40000)
+class PSAGroup(models.Model):
+    name = models.CharField(max_length=100)
+    score = models.IntegerField(default=0)
     pub_date = models.DateTimeField('Date Published', default=timezone.now)
-    amount = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.query
+        return self.name
+
+class PSAEntry(models.Model):
+    group = models.ForeignKey(PSAGroup, on_delete=models.CASCADE)
+    problem = models.CharField(max_length=1000)
+    solution = models.CharField(max_length=1000)
+    answer = models.CharField(max_length=100)
+    pub_date = models.DateTimeField('Date Published', default=timezone.now)
+
+    def __str__(self):
+        return f'{self.problem} - {self.solution} - {self.answer}'
     
-    def get_output(self):
-        response = client.chat.completions.create(
-            model="o3",
-            messages=[{"role": "user", "content": self.query}]
+    def get_ai_solution_and_answer(self):
+        response = client.responses.create(
+            model="gpt-4o",
+            input=f"Solve the following problem. Output ONLY your final answer on the last line after your solution. It must only be the answer, no other text. The answer must have zero formatting. {self.problem}"
         )
-        return response.choices[0].message.content
+        response_text = response.output_text
+        return (response_text, response_text.split('\n')[-1])
 
-class Output(models.Model):
-    query = models.ForeignKey(Query, on_delete=models.CASCADE)
-    output = models.CharField(max_length=40000)
+class AIResponse(models.Model):
+    psa_entry = models.ForeignKey(PSAEntry, on_delete=models.CASCADE)
+    ai_solution = models.CharField(max_length=40000)
+    ai_answer = models.CharField(max_length=100)
     pub_date = models.DateTimeField('Date Published', default=timezone.now)
-    votes = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.output
+        return f'{self.ai_solution} - {self.ai_answer}'
