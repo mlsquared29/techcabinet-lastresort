@@ -1,0 +1,10 @@
+<div class="text-center py-8">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+    <p class="text-gray-600">Loading AI Responses</p>
+    <p class="text-sm text-gray-500 mt-2">This may take a few moments</p>
+</div>
+<div hx-get="{% url 'lastresort:check_outputs' psa_group.id %}"
+     hx-trigger="load delay:3s"
+     hx-swap="innerHTML"
+     hx-target="#outputs-container">
+</div> 

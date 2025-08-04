@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Review - {{ competition.name }} - Last Resort</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header with Navigation -->
+        <div class="mb-8 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'lastresort:dashboard' %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                    <span class="mr-2">←</span>
+                    Back to Dashboard
+                </a>
+                <a href="{% url 'lastresort:competition' competition.id %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                    <span class="mr-2">📋</span>
+                    Competition Info
+                </a>
+                <a href="{% url 'lastresort:leaderboard' competition.id %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                    <span class="mr-2">🏆</span>
+                    View Leaderboard
+                </a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-700">Admin: <span class="font-semibold">{{ user.username }}</span></span>
+                <a href="{% url 'lastresort:logout' %}" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors duration-200">
+                    <span class="mr-2">🚪</span>
+                    Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="p-4 rounded-md mb-4 {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-200{% elif message.tags == 'error' %}bg-red-100 text-red-800 border border-red-200{% elif message.tags == 'info' %}bg-blue-100 text-blue-800 border border-blue-200{% else %}bg-gray-100 text-gray-800 border border-gray-200{% endif %}">
+                        <div class="flex items-center">
+                            {% if message.tags == 'success' %}
+                                <span class="mr-2">✅</span>
+                            {% elif message.tags == 'error' %}
+                                <span class="mr-2">❌</span>
+                            {% elif message.tags == 'info' %}
+                                <span class="mr-2">ℹ️</span>
+                            {% else %}
+                                <span class="mr-2">💬</span>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Admin Review</h1>
+            <h2 class="text-2xl text-gray-600">{{ competition.name }}</h2>
+            <p class="text-lg text-gray-500 mt-2">Review and approve/reject submissions</p>
+        </div>
+
+        <!-- Submissions List -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800">All Submissions ({{ submissions.count }})</h2>
+            </div>
+            
+            {% if submissions %}
+                <div class="divide-y divide-gray-200">
+                    {% for submission in submissions %}
+                        <div class="p-6 hover:bg-gray-50 transition-colors duration-200">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-4">
+                                    <div class="text-2xl">⏳</div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">Submission #{{ submission.id }}</h3>
+                                        <p class="text-sm text-gray-500">by {{ submission.user.username }}</p>
+                                        <p class="text-sm text-gray-500">{{ submission.pub_date|date:"M j, Y g:i A" }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-lg text-gray-400 bg-gray-50 px-3 py-1 rounded-lg border border-gray-200">
+                                        ⏳ Pending Review
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Submission Details -->
+                            <div class="mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-2">Questions:</h4>
+                                <div class="space-y-2">
+                                    {% for entry in submission.psaentry_set.all %}
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <p class="text-sm text-gray-600"><strong>Q{{ forloop.counter }}:</strong> {{ entry.problem }}</p>
+                                            <p class="text-sm text-gray-600"><strong>Solution:</strong> {{ entry.solution }}</p>
+                                            <p class="text-sm text-gray-600"><strong>Answer:</strong> {{ entry.answer }}</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            {% if submission.reason %}
+                                <div class="mb-4">
+                                    <h4 class="font-semibold text-gray-800 mb-2">Reason:</h4>
+                                    <p class="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">{{ submission.reason }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Action Buttons -->
+                            <div class="flex space-x-4">
+                                <button onclick="showAcceptModal({{ submission.id }})" 
+                                        class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors duration-200">
+                                    <span class="mr-2">✅</span>
+                                    Accept
+                                </button>
+                                <button onclick="showRejectModal({{ submission.id }})" 
+                                        class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors duration-200">
+                                    <span class="mr-2">❌</span>
+                                    Reject
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <div class="text-6xl mb-4">✅</div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No Pending Submissions</h3>
+                    <p class="text-gray-600">All submissions for this competition have been reviewed.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Accept Modal -->
+    <div id="acceptModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Accept Submission</h3>
+                    <form method="post" id="acceptForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="submission_id" id="acceptSubmissionId">
+                        <input type="hidden" name="action" value="accept">
+                        <div class="mb-4">
+                            <label for="acceptReason" class="block text-sm font-medium text-gray-700 mb-2">Reason (optional):</label>
+                            <textarea name="reason" id="acceptReason" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="hideAcceptModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                            <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md">Accept</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Reject Submission</h3>
+                    <form method="post" id="rejectForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="submission_id" id="rejectSubmissionId">
+                        <input type="hidden" name="action" value="reject">
+                        <div class="mb-4">
+                            <label for="rejectReason" class="block text-sm font-medium text-gray-700 mb-2">Reason (required):</label>
+                            <textarea name="reason" id="rejectReason" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="hideRejectModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                            <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md">Reject</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showAcceptModal(submissionId) {
+            document.getElementById('acceptSubmissionId').value = submissionId;
+            document.getElementById('acceptModal').classList.remove('hidden');
+        }
+
+        function hideAcceptModal() {
+            document.getElementById('acceptModal').classList.add('hidden');
+            document.getElementById('acceptReason').value = '';
+        }
+
+        function showRejectModal(submissionId) {
+            document.getElementById('rejectSubmissionId').value = submissionId;
+            document.getElementById('rejectModal').classList.remove('hidden');
+        }
+
+        function hideRejectModal() {
+            document.getElementById('rejectModal').classList.add('hidden');
+            document.getElementById('rejectReason').value = '';
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('acceptModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideAcceptModal();
+            }
+        });
+
+        document.getElementById('rejectModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideRejectModal();
+            }
+        });
+    </script>
+</body>
+</html> 

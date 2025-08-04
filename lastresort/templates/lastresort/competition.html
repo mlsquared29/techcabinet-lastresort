@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ competition.name }} - Last Resort</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header with Back Button -->
+        <div class="mb-8 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'lastresort:dashboard' %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                    <span class="mr-2">←</span>
+                    Back to Dashboard
+                </a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-700">Welcome, <span class="font-semibold">{{ user.username }}</span></span>
+                <a href="{% url 'lastresort:logout' %}" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors duration-200">
+                    <span class="mr-2">🚪</span>
+                    Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="p-4 rounded-md mb-4 {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-200{% elif message.tags == 'error' %}bg-red-100 text-red-800 border border-red-200{% elif message.tags == 'info' %}bg-blue-100 text-blue-800 border border-blue-200{% else %}bg-gray-100 text-gray-800 border border-gray-200{% endif %}">
+                        <div class="flex items-center">
+                            {% if message.tags == 'success' %}
+                                <span class="mr-2">✅</span>
+                            {% elif message.tags == 'error' %}
+                                <span class="mr-2">❌</span>
+                            {% elif message.tags == 'info' %}
+                                <span class="mr-2">ℹ️</span>
+                            {% else %}
+                                <span class="mr-2">💬</span>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Competition Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ competition.name }}</h1>
+            {% if competition.is_active %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 mb-6">
+                    Active
+                </span>
+            {% else %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 mb-6">
+                    Ended
+                </span>
+            {% endif %}
+        </div>
+
+        <!-- Competition Details -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">About This Competition</h2>
+                <div class="prose max-w-none">
+                    <p class="text-gray-700 leading-relaxed">{{ competition.description|linebreaks }}</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-800 mb-2">Start Date</h3>
+                    <p class="text-gray-600">{{ competition.pub_date|date:"F j, Y" }}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-800 mb-2">End Date</h3>
+                    <p class="text-gray-600">{{ competition.end_date|date:"F j, Y" }}</p>
+                </div>
+            </div>
+
+            <!-- Registration Status and Actions -->
+            <div class="border-t border-gray-200 pt-6">
+                {% if user in competition.user.all %}
+                    <div class="text-center">
+                        <div class="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-md mb-4">
+                            <span class="mr-2">✅</span>
+                            You are registered for this competition
+                        </div>
+                        <div class="flex justify-center space-x-4">
+                            {% if competition.is_active %}
+                                <a href="{% url 'lastresort:submit' competition.id %}" 
+                                   class="inline-flex items-center px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-md transition-colors duration-200">
+                                    <span class="mr-2">🚀</span>
+                                    Submit Entry
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'lastresort:leaderboard' competition.id %}" 
+                               class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors duration-200">
+                                <span class="mr-2">🏆</span>
+                                View Leaderboard
+                            </a>
+                            {% if user.is_staff or user.is_superuser %}
+                                <a href="{% url 'lastresort:admin_review' competition.id %}" 
+                                   class="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md transition-colors duration-200">
+                                    <span class="mr-2">👁️</span>
+                                    Review Submissions
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center">
+                        <p class="text-gray-600 mb-6">Join this competition to participate and submit your entries.</p>
+                        {% if competition.is_active %}
+                            <form method="post" action="{% url 'lastresort:register_competition' competition.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" 
+                                        class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200">
+                                    <span class="mr-2">📝</span>
+                                    Register for Competition
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-600 rounded-md">
+                                <span class="mr-2">⏰</span>
+                                Registration closed - Competition has ended
+                            </div>
+                        {% endif %}
+                        {% if user.is_staff or user.is_superuser %}
+                            <a href="{% url 'lastresort:admin_review' competition.id %}" 
+                               class="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md transition-colors duration-200">
+                                <span class="mr-2">👁️</span>
+                                Review Submissions
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Your Submissions Section -->
+        {% if user_submissions %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Submissions</h2>
+                <div class="space-y-4">
+                    {% for submission in user_submissions %}
+                        <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors duration-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-4">
+                                    <div class="text-2xl">
+                                        {% if submission.status == 'completed' %}
+                                            🎯
+                                        {% elif submission.status == 'pending' %}
+                                            ⏳
+                                        {% elif submission.status == 'processing' %}
+                                            🔄
+                                        {% else %}
+                                            📝
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">Submission #{{ submission.id }}</h3>
+                                        <p class="text-sm text-gray-500">{{ submission.pub_date|date:"M j, Y g:i A" }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    {% if submission.status == 'completed' %}
+                                        <div class="text-2xl font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">{{ submission.score|floatformat:1 }}%</div>
+                                        <p class="text-sm text-gray-500 mt-1">AI fooled</p>
+                                    {% else %}
+                                        <div class="text-lg text-gray-400 bg-gray-50 px-3 py-1 rounded-lg border border-gray-200">
+                                            {% if submission.status == 'pending' %}
+                                                ⏳ Pending
+                                            {% elif submission.status == 'rejected' %}
+                                                ❌ Rejected
+                                            {% elif submission.status == 'accepted' %}
+                                                ✅ Processing
+                                            {% else %}
+                                                {{ submission.status|title }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if submission.reason %}
+                                <div class="mb-4">
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <h4 class="font-semibold text-gray-800 mb-1">Reason</h4>
+                                        <p class="text-sm text-gray-600">{{ submission.reason }}</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="flex justify-end">
+                                {% if submission.status == 'accepted' or submission.status == 'completed' %}
+                                    <a href="{% url 'lastresort:output' submission.id competition.id %}" 
+                                       class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200 mr-3">
+                                        <span class="mr-2">👁️</span>
+                                        View Details
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'lastresort:download_submission' submission.id %}" 
+                                   class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors duration-200">
+                                    <span class="mr-2">📥</span>
+                                    Download
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
