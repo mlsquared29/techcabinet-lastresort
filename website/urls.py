@@ -16,8 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
+
+def health_check(request):
+    """Health check endpoint for Docker containers"""
+    return HttpResponse("healthy", content_type="text/plain")
 
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('lastresort/', include('lastresort.urls')),
     path('admin/', admin.site.urls),
 ]

@@ -1,0 +1,14 @@
+{
+  "name": "lastresort",
+  "version": "1.0.0",
+  "description": "Last Resort - Human vs AI Competition Platform",
+  "scripts": {
+    "build:css": "tailwindcss -i ./lastresort/static/lastresort/src/input.css -o ./lastresort/static/lastresort/dist/output.css --watch",
+    "build:css:prod": "tailwindcss -i ./lastresort/static/lastresort/src/input.css -o ./lastresort/static/lastresort/dist/output.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32"
+  }
+} 

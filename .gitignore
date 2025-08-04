@@ -23,3 +23,26 @@ Thumbs.db
 
 # Environment Variables
 .env
+
+# SSL certificates
+ssl/
+*.pem
+*.key
+
+# Database
+*.sql
+postgres_data/
+redis_data/
+
+# Generated files
+media/
+
+# Static files - ignore most but allow specific patterns
+static/
+!lastresort/static/
+!lastresort/static/lastresort/
+!lastresort/static/lastresort/src/
+!lastresort/static/lastresort/images/
+
+# Tailwind CSS - ignore built CSS
+lastresort/static/lastresort/dist/
