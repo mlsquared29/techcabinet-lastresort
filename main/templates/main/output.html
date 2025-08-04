@@ -29,11 +29,11 @@
     <div class="container mx-auto px-4 py-8 max-w-2xl">
         <!-- Back Navigation -->
         <div class="mb-6 flex justify-between items-center">
-            <a href="{% url 'main:process_query' %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+            <a href="{% url 'main:submit' competition.id %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
                 <span class="mr-2">←</span>
                 Back to Submission
             </a>
-            <a href="{% url 'main:leaderboard' %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors duration-200">
+            <a href="{% url 'main:leaderboard' competition.id %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors duration-200">
                 <span class="mr-2">🏆</span>
                 View Leaderboard
             </a>

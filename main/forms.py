@@ -1,10 +1,8 @@
 from django import forms
 
-NUM_QUESTIONS = 10
-
 class PSAEntryForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        num_questions = kwargs.pop('num_questions', NUM_QUESTIONS)
+        num_questions = kwargs.pop('num_questions')
         super().__init__(*args, **kwargs)
         for i in range(num_questions):
             self.fields[f'question_{i}'] = forms.CharField(label=f'Question {i+1}', max_length=1000)

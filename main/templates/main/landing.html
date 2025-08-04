@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Last Resort</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-gray-800 mb-4">Last Resort</h1>
+            <div class="w-24 h-1 bg-blue-600 mx-auto mb-8"></div>
+        </div>
+
+        <!-- Main Description -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8">
+            <div class="max-w-3xl mx-auto text-center">
+                <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                    The Last Resort is a novel competition/benchmark that tests the capabilities of large language models. 
+                    The main premise for each competition is to create problems and their respective solution, following a certain theme. 
+                    Your problems will then be feeded to a LLM, whose answer will be compared with the true given answer. 
+                    The goal is to "beat" the LLM, by coming up with questions that go beyond what they can do.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                    <a href="{% url 'main:register' %}" 
+                       class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200">
+                        <span class="mr-2">🚀</span>
+                        Start Competing
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
+                <div class="text-4xl mb-4">🧠</div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Holy</h3>
+                <p class="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec euismod purus.</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
+                <div class="text-4xl mb-4">⚡</div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Fucking</h3>
+                <p class="text-gray-600">Etiam eget massa augue. Nullam elementum luctus odio, et viverra quam accumsan ac.</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
+                <div class="text-4xl mb-4">🏅</div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Airball</h3>
+                <p class="text-gray-600">Suspendisse gravida sapien nulla, eget mattis ligula hendrerit vel. Vitae tempor.</p>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">How It Works</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Create Questions</h3>
+                            <p class="text-gray-600">Design challenging problems with their solutions and expected answers.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">AI Testing</h3>
+                            <p class="text-gray-600">Your questions are automatically fed to a large language model for evaluation.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Score Calculation</h3>
+                            <p class="text-gray-600">The AI's answers are compared with your expected solutions to calculate your score.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">4</div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Leaderboard Ranking</h3>
+                            <p class="text-gray-600">See how well you perform compared to other participants in the competition.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

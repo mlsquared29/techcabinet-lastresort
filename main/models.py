@@ -3,12 +3,33 @@ from django.db import models
 from django.utils import timezone
 from openai import OpenAI
 from dotenv import load_dotenv
+from django.contrib.auth.models import User
 
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+class Competition(models.Model):
+    user = models.ManyToManyField(User, related_name='competitions')
+    name = models.CharField(max_length=100)
+    short_description = models.CharField(max_length=1000)
+    description = models.TextField()
+    num_questions = models.IntegerField(default=1)
+    pub_date = models.DateTimeField('Date Published', default=timezone.now)
+    end_date = models.DateTimeField('Date Ended', default=timezone.now)
+    is_active = models.BooleanField(default=True)
+
+    def is_past_end_date(self):
+        return timezone.now() > self.end_date
+
+    def save(self, *args, **kwargs):
+        if self.is_past_end_date():
+            self.is_active = False
+        super().save(*args, **kwargs)
+
 class PSAGroup(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    competition = models.ForeignKey(Competition, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
     score = models.IntegerField(default=0)
     pub_date = models.DateTimeField('Date Published', default=timezone.now)

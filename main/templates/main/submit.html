@@ -10,19 +10,38 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">Outsmart the AI</h1>
-            <p class="text-xl text-gray-600">Write a set of {{num_questions}} questions and solutions that you think AI will struggle with.</p>
-            <div class="mt-4">
-                <a href="{% url 'main:leaderboard' %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors duration-200">
+        <!-- Header with Navigation -->
+        <div class="mb-8 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'main:dashboard' %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                    <span class="mr-2">←</span>
+                    Back to Dashboard
+                </a>
+                <a href="{% url 'main:competition' competition.id %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                    <span class="mr-2">📋</span>
+                    Competition Info
+                </a>
+                <a href="{% url 'main:leaderboard' competition.id %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
                     <span class="mr-2">🏆</span>
                     View Leaderboard
                 </a>
             </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-700">Welcome, <span class="font-semibold">{{ user.username }}</span></span>
+                <a href="{% url 'main:logout' %}" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors duration-200">
+                    <span class="mr-2">🚪</span>
+                    Logout
+                </a>
+            </div>
+        </div>
+
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Outsmart the AI</h1>
+            <p class="text-xl text-gray-600">Write a set of {{num_questions}} questions and solutions that you think AI will struggle with.</p>
         </div>
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <form action="{% url 'main:process_query' %}" method="post" class="space-y-6">
+            <form action="{% url 'main:submit' competition.id %}" method="post" class="space-y-6">
                 {% csrf_token %}
                 
                 <!-- Question Rows -->

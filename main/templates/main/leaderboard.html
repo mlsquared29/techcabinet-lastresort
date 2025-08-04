@@ -10,18 +10,37 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <!-- Navigation -->
-        <div class="mb-6 flex justify-between items-center">
-            <a href="{% url 'main:process_query' %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
-                <span class="mr-2">←</span>
-                Back to Submission
-            </a>
+        <!-- Header with Navigation -->
+        <div class="mb-8 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'main:dashboard' %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                    <span class="mr-2">←</span>
+                    Back to Dashboard
+                </a>
+                <a href="{% url 'main:competition' competition.id %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                    <span class="mr-2">📋</span>
+                    Competition Info
+                </a>
+                {% if competition.is_active %}
+                    <a href="{% url 'main:submit' competition.id %}" class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center">
+                        <span class="mr-2">🚀</span>
+                        Submit Entry
+                    </a>
+                {% endif %}
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-700">Welcome, <span class="font-semibold">{{ user.username }}</span></span>
+                <a href="{% url 'main:logout' %}" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors duration-200">
+                    <span class="mr-2">🚪</span>
+                    Logout
+                </a>
+            </div>
         </div>
 
         <!-- Header -->
         <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">Last Resort Leaderboard</h1>
-            <p class="text-xl text-gray-600">What percentage of the time can you fool the AI?</p>
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">{{ competition.name }} Leaderboard</h1>
+            <p class="text-xl text-gray-600">What percentage of the time can you beat the AI?</p>
         </div>
 
         <!-- Leaderboard -->
@@ -49,33 +68,39 @@
                                         {% endif %}
                                     </div>
                                     
-                                    <!-- Group Info -->
+                                    <!-- User Info -->
                                     <div>
-                                        <h3 class="text-lg font-semibold text-gray-800">{{ psa_group.name }}</h3>
-                                        <p class="text-sm text-gray-500">{{ psa_group.pub_date|date:"M j, Y g:i A" }}</p>
+                                        <h3 class="text-lg font-semibold text-gray-800">{{ psa_group.username }}</h3>
+                                        <p class="text-sm text-gray-500">Best Performance - {{ psa_group.best_submission_date|date:"M j, Y g:i A" }}</p>
                                     </div>
                                 </div>
                                 
                                 <!-- Score -->
                                 <div class="text-right">
-                                    <div class="text-2xl font-bold text-blue-600">{{ psa_group.score|floatformat:1 }}%</div>
+                                    <div class="text-2xl font-bold text-blue-600">{{ psa_group.best_score|floatformat:1 }}%</div>
                                     <p class="text-sm text-gray-500">AI fooled</p>
                                 </div>
                             </div>
-                            
-
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="text-center py-12">
-                    <div class="text-6xl mb-4">🏆</div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No submissions yet</h3>
-                    <p class="text-gray-600 mb-4">Be the first to create challenging questions for AI!</p>
-                    <a href="{% url 'main:process_query' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200">
-                        Create Your First Submission
-                    </a>
-                </div>
+                {% if competition.is_active %}
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">🏆</div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No Submissions Yet</h3>
+                        <p class="text-gray-600 mb-4">Be the first to create challenging questions for AI!</p>
+                        <a href="{% url 'main:submit' competition.id %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200">
+                            Create Your First Submission
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">😥</div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No Submissions</h3>
+                        <p class="text-gray-600 mb-4">There were no submissions for this competition!</p>
+                    </div>
+                {% endif %}
             {% endif %}
         </div>
 
@@ -83,8 +108,8 @@
         {% if psa_groups %}
             <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
-                    <div class="text-3xl font-bold text-blue-600 mb-2">{{ psa_groups.count }}</div>
-                    <div class="text-gray-600">Total Submissions</div>
+                    <div class="text-3xl font-bold text-blue-600 mb-2">{{ psa_groups|length }}</div>
+                    <div class="text-gray-600">Total Participants</div>
                 </div>
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
                     <div class="text-3xl font-bold text-green-600 mb-2">
@@ -101,7 +126,7 @@
                         {% if psa_groups %}
                             {% for group in psa_groups %}
                                 {% if forloop.first %}
-                                    {{ group.score|floatformat:1 }}%
+                                    {{ group.best_score|floatformat:1 }}%
                                 {% endif %}
                             {% endfor %}
                         {% else %}
